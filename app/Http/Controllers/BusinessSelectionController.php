@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\AuditService;
 
 class BusinessSelectionController extends Controller
 {
@@ -37,6 +38,17 @@ class BusinessSelectionController extends Controller
         session([
             'current_business_id' => $business->id,
         ]);
+
+        app(AuditService::class)->log(
+            'business.selected',
+            $business,
+            [],
+            [],
+            [
+                'business_name' => $business->name,
+            ],
+            $business->id
+        );
 
         return redirect()->route('dashboard');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AuditService;
 
 class AuthController extends Controller
 {
@@ -36,6 +37,17 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        app(AuditService::class)->log(
+            'auth.login',
+            $request->user(),
+            [],
+            [],
+            [
+                'email' => $request->user()->email,
+            ]
+        );
+
+
         $user = $request->user();
 
         $user->update([
@@ -58,7 +70,16 @@ class AuthController extends Controller
             session([
                 'current_business_id' => $memberships->first()->business_id,
             ]);
-
+            app(AuditService::class)->log(
+                'auth.login',
+                $request->user(),
+                [],
+                [],
+                [
+                    'email' => $request->user()->email,
+                ],
+                $memberships->first()->business_id
+            );
             return redirect()->route('dashboard');
         }
 
@@ -79,6 +100,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        app(AuditService::class)->log(
+            'auth.logout',
+            $request->user()
+        );
+
         Auth::logout();
 
         $request->session()->invalidate();
