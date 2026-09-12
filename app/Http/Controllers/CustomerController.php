@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\FbrProvince;
 use Illuminate\Http\Request;
+use App\Services\AuditService;
 
 class CustomerController extends Controller
 {
@@ -128,6 +129,24 @@ class CustomerController extends Controller
 
         $customer = Customer::create($validated);
 
+        app(AuditService::class)->log(
+            'customer.created',
+            $customer,
+            [],
+            [
+                'business_name' => $customer->business_name,
+                'contact_person' => $customer->contact_person,
+                'registration_type' => $customer->registration_type,
+                'ntn_cnic' => $customer->ntn_cnic,
+                'strn' => $customer->strn,
+                'province' => $customer->province,
+                'city' => $customer->city,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'status' => $customer->status,
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Customer created successfully.',
@@ -178,8 +197,37 @@ class CustomerController extends Controller
 
             $validated['province'] = $province->description;
         }
-
+        $oldValues = [
+            'business_name' => $customer->business_name,
+            'contact_person' => $customer->contact_person,
+            'registration_type' => $customer->registration_type,
+            'ntn_cnic' => $customer->ntn_cnic,
+            'strn' => $customer->strn,
+            'province' => $customer->province,
+            'city' => $customer->city,
+            'phone' => $customer->phone,
+            'email' => $customer->email,
+            'status' => $customer->status,
+        ];
         $customer->update($validated);
+
+        app(AuditService::class)->log(
+            'customer.updated',
+            $customer,
+            $oldValues,
+            [
+                'business_name' => $customer->business_name,
+                'contact_person' => $customer->contact_person,
+                'registration_type' => $customer->registration_type,
+                'ntn_cnic' => $customer->ntn_cnic,
+                'strn' => $customer->strn,
+                'province' => $customer->province,
+                'city' => $customer->city,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'status' => $customer->status,
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -195,9 +243,22 @@ class CustomerController extends Controller
         }
 
         $this->ensureCustomerBelongsToBusiness($customer);
-
+        $deletedValues = [
+            'business_name' => $customer->business_name,
+            'registration_type' => $customer->registration_type,
+            'ntn_cnic' => $customer->ntn_cnic,
+            'strn' => $customer->strn,
+            'province' => $customer->province,
+            'city' => $customer->city,
+            'phone' => $customer->phone,
+            'email' => $customer->email,
+        ];
         $customer->delete();
-
+        app(AuditService::class)->log(
+            'customer.deleted',
+            $customer,
+            $deletedValues
+        );
         return response()->json([
             'success' => true,
             'message' => 'Customer deleted successfully.',

@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 use App\Models\FbrTransactionType;
 use App\Models\FbrUom;
 use App\Services\FBR\FbrReferenceService;
+use App\Services\AuditService;
 
 class ProductController extends Controller
 {
@@ -168,6 +169,23 @@ class ProductController extends Controller
 
         $product = Product::create($validated);
 
+        app(AuditService::class)->log(
+            'product.created',
+            $product,
+            [],
+            [
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'type' => $product->type,
+                'hs_code' => $product->hs_code,
+                'uom' => $product->uom,
+                'sale_type' => $product->sale_type,
+                'tax_rate' => $product->tax_rate,
+                'unit_price' => $product->unit_price,
+                'status' => $product->status,
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Product / Service created successfully.',
@@ -279,7 +297,36 @@ class ProductController extends Controller
 
         }
 
+        $oldValues = [
+            'name' => $product->name,
+            'sku' => $product->sku,
+            'type' => $product->type,
+            'hs_code' => $product->hs_code,
+            'uom' => $product->uom,
+            'sale_type' => $product->sale_type,
+            'tax_rate' => $product->tax_rate,
+            'unit_price' => $product->unit_price,
+            'status' => $product->status,
+        ];
+
         $product->update($validated);
+
+        app(AuditService::class)->log(
+            'product.updated',
+            $product,
+            $oldValues,
+            [
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'type' => $product->type,
+                'hs_code' => $product->hs_code,
+                'uom' => $product->uom,
+                'sale_type' => $product->sale_type,
+                'tax_rate' => $product->tax_rate,
+                'unit_price' => $product->unit_price,
+                'status' => $product->status,
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -297,8 +344,19 @@ class ProductController extends Controller
         }
 
         $this->ensureBelongsToBusiness($product);
-
+        $deletedValues = [
+            'name' => $product->name,
+            'sku' => $product->sku,
+            'hs_code' => $product->hs_code,
+            'sale_type' => $product->sale_type,
+            'unit_price' => $product->unit_price,
+        ];
         $product->delete();
+        app(AuditService::class)->log(
+            'product.deleted',
+            $product,
+            $deletedValues
+        );
 
         return response()->json([
             'success' => true,
