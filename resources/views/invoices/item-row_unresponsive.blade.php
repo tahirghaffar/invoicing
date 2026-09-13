@@ -1,4 +1,4 @@
-<div class="invoice-item invoice-item-compact">
+<div class="invoice-item">
 
     <input type="hidden"
            class="product-id"
@@ -91,8 +91,8 @@
                class="quantity"
                name="items[{{ $index }}][quantity]"
                value="{{ $item->quantity ?? 1 }}"
-               min="0"
-               step="1">
+               min="0.0001"
+               step="0.0001">
     </div>
 
     <div class="item-field">
@@ -102,7 +102,7 @@
                name="items[{{ $index }}][unit_price]"
                value="{{ $item->unit_price ?? 0 }}"
                min="0"
-               step="1">
+               step="0.0001">
     </div>
 
     <div class="item-field">
@@ -112,7 +112,7 @@
                name="items[{{ $index }}][discount]"
                value="{{ $item->discount ?? 0 }}"
                min="0"
-               step="1">
+               step="0.0001">
     </div>
 
     <div class="item-field">
@@ -124,7 +124,7 @@
         </div>
     </div>
 
-    <div class="item-field item-action-field">
+    <div class="item-field">
         <label class="item-label">&nbsp;</label>
         <button type="button"
                 class="btn remove-item"

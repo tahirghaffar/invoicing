@@ -24,7 +24,7 @@
             minmax(175px, 1.35fr)
             minmax(145px, 1.15fr)
             minmax(75px, .60fr)
-            minmax(70px, .55fr)
+            minmax(110px, .85fr)
             minmax(70px, .55fr)
             minmax(100px, .78fr)
             minmax(85px, .68fr)
@@ -33,7 +33,7 @@
         gap: 9px;
         align-items: end;
         min-width: 1280px;
-        padding: 5px 6px;
+        padding: 11px 12px;
         margin-bottom: 10px;
         background: #fff;
         border: 1px solid #e7ebf2;
@@ -55,43 +55,33 @@
 
     .invoice-item .item-label {
         display: block;
-        margin: 10px 3px;
+        margin: 0 0 5px;
         color: #7a8293;
-        font-size: 11px;
-        line-height: 1.05;
+        font-size: 10px;
+        line-height: 1.1;
         font-weight: 700;
-        letter-spacing: .25px;
+        letter-spacing: .35px;
         text-transform: uppercase;
         white-space: nowrap;
     }
 
-    /* Strong selector + !important so theme/global input CSS cannot override
-       the compact invoice-row controls. */
-    #invoice-items .invoice-item .item-field input[type='text'],
-    #invoice-items .invoice-item .item-field input[type='number'],
-    #invoice-items .invoice-item .item-field select {
-        width: 100% !important;
-        height: 30px !important;
-        min-height: 30px !important;
-        padding: 3px 6px !important;
-        margin: 5px 0px !important;
-        border: 1px solid #e1e6ee !important;
-        border-radius: 2px !important;
+    .invoice-item input[type='text'],
+    .invoice-item input[type='number'],
+    .invoice-item select {
+        width: 100%;
+        height: 38px;
+        min-height: 38px;
+        padding: 7px 9px;
+        margin: 0;
+        border: 1px solid #e1e6ee;
+        border-radius: 8px;
         background: #fff;
         color: #252936;
-        font-size: 11px !important;
-        line-height: 1.1 !important;
+        font-size: 12px;
+        line-height: 1.2;
         outline: none;
-        box-sizing: border-box !important;
+        box-sizing: border-box;
         transition: border-color .15s ease, box-shadow .15s ease;
-    }
-
-    #invoice-items .invoice-item .item-field select {
-        padding-right: 22px !important;
-    }
-
-    #invoice-items .invoice-item .item-field input::placeholder {
-        font-size: 11px !important;
     }
 
     .invoice-item input[type='text']:focus,
@@ -130,26 +120,25 @@
     }
 
     .invoice-item .line-total-box {
-        height: 30px;
-        min-height: 30px;
+        height: 38px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        padding: 3px 6px;
+        padding: 7px 10px;
         border: 1px solid #e1e6ee;
-        border-radius: 7px;
+        border-radius: 8px;
         background: #f5f6ff;
         color: #252936;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 800;
         white-space: nowrap;
         box-sizing: border-box;
     }
 
     .invoice-item .remove-item {
-        width: 30px;
-        height: 30px;
-        min-height: 30px;
+        width: 38px;
+        height: 38px;
+        min-height: 38px;
         padding: 0;
         margin: 0;
         border: 1px solid #ffd4d9;
@@ -190,134 +179,9 @@
         margin-bottom: 2px;
     }
 
-    /*
-     * Tablet:
-     * Keep the compact desktop row, but allow the items area to scroll
-     * horizontally when the available width is smaller.
-     */
-    @media (min-width: 768px) and (max-width: 1199.98px) {
-        #invoice-items {
-            overflow-x: auto !important;
-            overflow-y: visible !important;
-            padding-bottom: 10px;
-        }
-
+    @media (max-width: 1199.98px) {
         .invoice-item {
             min-width: 1240px;
-        }
-    }
-
-    /*
-     * Mobile:
-     * One invoice field per row. This removes horizontal scrolling
-     * and gives every control the full available screen width.
-     */
-    @media (max-width: 767.98px) {
-
-        .invoice-items-card {
-            overflow: visible !important;
-            padding-left: 14px;
-            padding-right: 14px;
-        }
-
-        #invoice-items {
-            width: 100%;
-            overflow: visible !important;
-            padding: 0;
-        }
-
-        .invoice-item {
-            display: grid;
-            grid-template-columns: 1fr;
-            min-width: 0 !important;
-            width: 100%;
-            gap: 12px;
-            padding: 14px;
-            margin-bottom: 14px;
-            border-radius: 12px;
-            transform: none !important;
-        }
-
-        .invoice-item:hover {
-            transform: none !important;
-        }
-
-        .invoice-item .item-field {
-            width: 100%;
-            min-width: 0;
-        }
-
-        .invoice-item .item-label {
-            margin-bottom: 6px;
-            font-size: 11px;
-            letter-spacing: .25px;
-            white-space: normal;
-        }
-
-        #invoice-items .invoice-item input[type='text'],
-        #invoice-items .invoice-item input[type='number'],
-        #invoice-items .invoice-item select,
-        .invoice-item .line-total-box {
-            width: 100% !important;
-            height: 40px !important;
-            min-height: 40px !important;
-            padding: 6px 8px !important;
-            font-size: 13px !important;
-            border-radius: 9px !important;
-        }
-
-        .invoice-item .product-field {
-            z-index: 300;
-        }
-
-        .invoice-item .product-results {
-            top: calc(100% + 5px);
-            left: 0;
-            right: 0;
-            width: 100%;
-            max-height: 240px;
-            z-index: 99999;
-        }
-
-        .invoice-item .line-total-box {
-            justify-content: flex-start;
-            padding-left: 12px;
-            font-size: 15px;
-        }
-
-        .invoice-item .item-action-field {
-            margin-top: 2px;
-        }
-
-        .invoice-item .item-action-field .item-label {
-            display: none;
-        }
-
-        .invoice-item .remove-item {
-            width: 100%;
-            height: 44px;
-            min-height: 44px;
-            border-radius: 9px;
-            font-size: 14px;
-            font-weight: 700;
-        }
-
-        .invoice-item .remove-item::after {
-            content: ' Remove Item';
-            font-size: 13px;
-            margin-left: 5px;
-        }
-
-        #add-item {
-            width: 100%;
-            min-height: 44px;
-            margin-bottom: 8px;
-        }
-
-        #save-draft,
-        #preview-invoice {
-            width: 100%;
-            margin-bottom: 8px;
         }
     }
 </style>
@@ -631,7 +495,7 @@
                             </div>
                         </div>
 
-                        <div class="item-field item-action-field">
+                        <div class="item-field">
                             <label class="item-label">&nbsp;</label>
                             <button
                                 type="button"

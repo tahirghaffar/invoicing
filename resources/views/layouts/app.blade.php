@@ -728,8 +728,8 @@ if(auth()->check() && auth()->user()->hasSystemRole('super-admin')){
                 [
                     'label' => 'Business Profile',
                     'icon' => 'bi-building',
-                    'url' => $navUrl('business.profile', '/business-profile'),
-                    'active' => request()->is('business-profile*') || request()->is('businesses*'),
+                    'url' => route('business.profile.edit'),
+                    'active' => request()->routeIs('business.profile.edit') || request()->is('settings/business-profile*'),
                 ],
             ],
         ];
@@ -845,13 +845,26 @@ if(auth()->check() && auth()->user()->hasSystemRole('super-admin')){
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end mt-2" style="min-width: 220px;">
-                            <li class="px-2 pt-1 pb-2">
-                                <div class="small fw-semibold text-dark">{{ $userName }}</div>
-                                @if($userEmail)
-                                    <div class="text-muted" style="font-size:.7rem;">{{ $userEmail }}</div>
-                                @endif
-                            </li>
+                            @if($userEmail)
+                                <li>
+                                    <a
+                                        href="{{ route('business.profile.edit') }}"
+                                        class="d-block px-2 pt-1 pb-2 text-decoration-none"
+                                    >
+                                        <div class="small fw-semibold text-dark">
+                                            Profile
+                                        </div>
+                                    </a>
+                                </li>
+                            @endif
                             <li><hr class="dropdown-divider"></li>
+{{--                            <li class="px-2 pt-1 pb-2">--}}
+{{--                                <div class="small fw-semibold text-dark">{{ $userName }}</div>--}}
+{{--                                @if($userEmail)--}}
+{{--                                    <div class="text-muted" style="font-size:.7rem;">{{ $userEmail }}</div>--}}
+{{--                                @endif--}}
+{{--                            </li>--}}
+{{--                            <li><hr class="dropdown-divider"></li>--}}
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf

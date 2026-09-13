@@ -12,6 +12,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FbrReferenceController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\SystemMaintenanceController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,8 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 
 });
+
+Route::get('/system-maintenance/migrate', [SystemMaintenanceController::class, 'migrate']);
 
 Route::middleware('guest')->group(function () {
 
