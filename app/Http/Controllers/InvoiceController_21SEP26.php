@@ -694,62 +694,6 @@ class InvoiceController extends Controller
         }
     }
 
-
-    /**
-     * Resolve the FBR invoice number that should be displayed.
-     *
-     * Production number always has priority. If there is no production
-     * number, the latest successful sandbox number is used for testing.
-     */
-    private function resolveFbrDisplayData(
-        Invoice $invoice,
-        FbrQrCodeService $qrService
-    ): array {
-        $displayFbrInvoiceNumber =
-            $invoice->fbr_invoice_number;
-
-        $isSandbox = false;
-
-        if (!$displayFbrInvoiceNumber) {
-
-            $sandboxSubmission = $invoice
-                ->fbrSubmissions()
-                ->where('environment', 'sandbox')
-                ->where('fbr_status_code', '00')
-                ->whereNotNull('fbr_invoice_number')
-                ->latest('submitted_at')
-                ->first();
-
-            if ($sandboxSubmission) {
-
-                $displayFbrInvoiceNumber =
-                    $sandboxSubmission->fbr_invoice_number;
-
-                $isSandbox = true;
-            }
-        }
-
-        $qrCode = null;
-
-        if ($displayFbrInvoiceNumber) {
-
-            $qrCode = $qrService->generate(
-                $displayFbrInvoiceNumber
-            );
-        }
-
-        return [
-            'displayFbrInvoiceNumber' =>
-                $displayFbrInvoiceNumber,
-
-            'isSandbox' =>
-                $isSandbox,
-
-            'qrCode' =>
-                $qrCode,
-        ];
-    }
-
 //    public function preview(
 //        Request $request,
 //        Invoice $invoice
@@ -785,26 +729,60 @@ class InvoiceController extends Controller
 
         $this->ensureBelongsToBusiness($invoice);
 
-        $invoice->load([
-            'items',
-            'business',
-            'sandboxScenario',
-        ]);
+        $invoice->load('items', 'business');
 
-        $fbrDisplay =
-            $this->resolveFbrDisplayData(
-                $invoice,
-                $qrService
+        /*
+        |--------------------------------------------------------------------------
+        | Production FBR invoice number has first priority
+        |--------------------------------------------------------------------------
+        */
+
+        $displayFbrInvoiceNumber = $invoice->fbr_invoice_number;
+
+        $isSandbox = false;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | If no production invoice number, use latest successful sandbox number
+        |--------------------------------------------------------------------------
+        */
+
+        if (! $displayFbrInvoiceNumber) {
+
+            $sandboxSubmission = $invoice
+                ->fbrSubmissions()
+                ->where('environment', 'sandbox')
+                ->where('fbr_status_code', '00')
+                ->whereNotNull('fbr_invoice_number')
+                ->latest('submitted_at')
+                ->first();
+
+            if ($sandboxSubmission) {
+
+                $displayFbrInvoiceNumber =
+                    $sandboxSubmission->fbr_invoice_number;
+
+                $isSandbox = true;
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate QR Code
+        |--------------------------------------------------------------------------
+        */
+
+        $qrCode = null;
+
+        if ($displayFbrInvoiceNumber) {
+
+            $qrCode = $qrService->generate(
+                $displayFbrInvoiceNumber
             );
+        }
 
-        $displayFbrInvoiceNumber =
-            $fbrDisplay['displayFbrInvoiceNumber'];
-
-        $isSandbox =
-            $fbrDisplay['isSandbox'];
-
-        $qrCode =
-            $fbrDisplay['qrCode'];
 
         return view(
             'invoices.preview',
@@ -817,11 +795,9 @@ class InvoiceController extends Controller
         );
     }
 
-
     public function printView(
         Request $request,
-        Invoice $invoice,
-        FbrQrCodeService $qrService
+        Invoice $invoice
     ) {
         if (! $this->membership($request)
             ->hasPermission('invoices.view')) {
@@ -833,32 +809,11 @@ class InvoiceController extends Controller
         $invoice->load([
             'items',
             'business',
-            'sandboxScenario',
         ]);
-
-        $fbrDisplay =
-            $this->resolveFbrDisplayData(
-                $invoice,
-                $qrService
-            );
-
-        $displayFbrInvoiceNumber =
-            $fbrDisplay['displayFbrInvoiceNumber'];
-
-        $isSandbox =
-            $fbrDisplay['isSandbox'];
-
-        $qrCode =
-            $fbrDisplay['qrCode'];
 
         return view(
             'invoices.print',
-            compact(
-                'invoice',
-                'qrCode',
-                'displayFbrInvoiceNumber',
-                'isSandbox'
-            )
+            compact('invoice')
         );
     }
 
@@ -878,44 +833,27 @@ class InvoiceController extends Controller
         $invoice->load([
             'items',
             'business',
-            'sandboxScenario',
         ]);
 
-        $fbrDisplay =
-            $this->resolveFbrDisplayData(
-                $invoice,
-                $qrService
+        $qrCode = null;
+
+        if ($invoice->fbr_invoice_number) {
+            $qrCode = $qrService->generate(
+                $invoice->fbr_invoice_number
             );
-
-        $displayFbrInvoiceNumber =
-            $fbrDisplay['displayFbrInvoiceNumber'];
-
-        $isSandbox =
-            $fbrDisplay['isSandbox'];
-
-        $qrCode =
-            $fbrDisplay['qrCode'];
+        }
 
         $pdf = Pdf::loadView(
             'invoices.pdf',
-            compact(
-                'invoice',
-                'qrCode',
-                'displayFbrInvoiceNumber',
-                'isSandbox'
-            )
+            compact('invoice','qrCode')
         );
 
-        $pdf->setPaper(
-            'a4',
-            'portrait'
-        );
+        $pdf->setPaper('a4','portrait');
 
         return $pdf->download(
             $invoice->invoice_number . '.pdf'
         );
     }
-
 
     public function fbrJson(
         Request $request,
@@ -1048,62 +986,25 @@ class InvoiceController extends Controller
 
         $business = app('currentBusiness');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Use the scenario already saved on the invoice
-        |--------------------------------------------------------------------------
-        */
-
-        $invoice->load('sandboxScenario');
-
-        $scenario = $invoice->sandboxScenario;
-
-        if (!$scenario) {
-
-            return response()->json([
-                'success' => false,
-                'message' =>
-                    'Please select and save an FBR Sandbox Scenario first.',
-            ], 422);
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ensure this scenario is assigned to the current business
-        |--------------------------------------------------------------------------
-        */
-
-        $allowed = $business
+        $allowedCodes = $business
             ->sandboxScenarios()
-            ->where(
-                'fbr_sandbox_scenarios.id',
-                $scenario->id
-            )
-            ->where(
-                'fbr_sandbox_scenarios.active',
-                true
-            )
-            ->exists();
+            ->where('fbr_sandbox_scenarios.active', true)
+            ->pluck('scenario_code')
+            ->toArray();
 
-        if (!$allowed) {
+        $validated = $request->validate([
 
-            return response()->json([
-                'success' => false,
-                'message' =>
-                    'This FBR scenario is not assigned to this business.',
-            ], 422);
-        }
+            'scenario_id' => [
+                'required',
+                Rule::in($allowedCodes),
+            ],
 
-
-        $scenarioCode =
-            $scenario->scenario_code;
+        ]);
 
         $payload = $builder->build(
             $invoice,
-            $scenarioCode
+            $validated['scenario_id']
         );
-
 
         /*
         |--------------------------------------------------------------------------
@@ -1111,25 +1012,19 @@ class InvoiceController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $validation =
-            $validator->validate($payload);
+        $validation = $validator->validate($payload);
 
         $validationResponse =
             $validation['response']['validationResponse']
             ?? [];
 
         if (
-            ($validationResponse['statusCode'] ?? null)
-            !== '00'
+            ($validationResponse['statusCode'] ?? null) !== '00'
         ) {
-
             return response()->json([
                 'success' => false,
-                'message' =>
-                    $validationResponse['error']
-                    ?? 'Invoice failed sandbox validation.',
-                'fbr_response' =>
-                    $validation['response'],
+                'message' => 'Invoice failed sandbox validation.',
+                'fbr_response' => $validation['response'],
             ], 422);
         }
 
@@ -1141,132 +1036,93 @@ class InvoiceController extends Controller
         */
 
         $submission = FbrSubmission::create([
-            'business_id' =>
-                $invoice->business_id,
-
-            'invoice_id' =>
-                $invoice->id,
-
-            'request_uuid' =>
-                (string) Str::uuid(),
-
-            'environment' =>
-                'sandbox',
-
-            'operation' =>
-                'post',
-
-            'scenario_id' =>
-                $scenarioCode,
-
-            'endpoint' =>
-                config('fbr.sandbox_post_url'),
-
-            'request_payload' =>
-                $payload,
-
-            'created_by' =>
-                $request->user()->id,
+            'business_id' => $invoice->business_id,
+            'invoice_id' => $invoice->id,
+            'request_uuid' => (string) Str::uuid(),
+            'environment' => 'sandbox',
+            'operation' => 'post',
+            'scenario_id' => $validated['scenario_id'],
+            'endpoint' => config('fbr.sandbox_post_url'),
+            'request_payload' => $payload,
+            'created_by' => $request->user()->id,
         ]);
 
 
         try {
 
-            $result =
-                $poster->post($payload);
+            $result = $poster->post($payload);
 
-            $response =
-                $result['response'];
+            $response = $result['response'];
 
             $fbrValidation =
-                $response['validationResponse']
-                ?? [];
+                $response['validationResponse'] ?? [];
 
             $submission->update([
-                'response_payload' =>
-                    $response,
+                'response_payload' => $response,
 
                 'http_status' =>
                     $result['http_status'],
 
                 'fbr_status_code' =>
-                    $fbrValidation['statusCode']
-                    ?? null,
+                    $fbrValidation['statusCode'] ?? null,
 
                 'fbr_status' =>
-                    $fbrValidation['status']
-                    ?? null,
+                    $fbrValidation['status'] ?? null,
 
                 'fbr_invoice_number' =>
-                    $response['invoiceNumber']
-                    ?? null,
+                    $response['invoiceNumber'] ?? null,
 
                 'error_message' =>
-                    $fbrValidation['error']
-                    ?? null,
+                    $fbrValidation['error'] ?? null,
 
-                'submitted_at' =>
-                    now(),
+                'submitted_at' => now(),
             ]);
 
 
             $success =
-                ($fbrValidation['statusCode'] ?? null)
-                    === '00'
-                &&
-                !empty(
-                    $response['invoiceNumber']
-                );
-
+                ($fbrValidation['statusCode'] ?? null) === '00'
+                && !empty($response['invoiceNumber']);
 
             if ($success) {
 
-                $business
-                    ->sandboxScenarios()
-                    ->updateExistingPivot(
-                        $scenario->id,
-                        [
-                            'status' =>
-                                'completed',
+                $scenario = \App\Models\FbrSandboxScenario::where(
+                    'scenario_code',
+                    $validated['scenario_id']
+                )->first();
 
-                            'completed_at' =>
-                                now(),
-                        ]
-                    );
+                if ($scenario) {
+
+                    $business->sandboxScenarios()
+                        ->updateExistingPivot(
+                            $scenario->id,
+                            [
+                                'status' => 'completed',
+                                'completed_at' => now(),
+                            ]
+                        );
+                }
             }
 
-
             return response()->json([
-                'success' =>
-                    $success,
+                'success' => $success,
 
-                'message' =>
-                    $success
-                        ? 'Invoice submitted successfully to FBR Sandbox.'
-                        : 'FBR Sandbox rejected the invoice.',
+                'message' => $success
+                    ? 'Invoice submitted successfully to FBR Sandbox.'
+                    : 'FBR Sandbox rejected the invoice.',
 
                 'fbr_invoice_number' =>
-                    $response['invoiceNumber']
-                    ?? null,
+                    $response['invoiceNumber'] ?? null,
 
-                'scenario' =>
-                    $scenarioCode,
+                'fbr_response' => $response,
 
-                'fbr_response' =>
-                    $response,
-
-                'submission_id' =>
-                    $submission->id,
+                'submission_id' => $submission->id,
             ]);
 
         } catch (\Throwable $e) {
 
             $submission->update([
-                'error_message' =>
-                    $e->getMessage(),
-
-                'submitted_at' =>
-                    now(),
+                'error_message' => $e->getMessage(),
+                'submitted_at' => now(),
             ]);
 
             report($e);
@@ -1279,7 +1135,6 @@ class InvoiceController extends Controller
             ], 500);
         }
     }
-
 
     public function submissions(
         Request $request,

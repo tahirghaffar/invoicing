@@ -30,12 +30,18 @@
             Download PDF
         </a>
 
-        <a
-            href="{{ route('invoices.fbr-json',$invoice) }}"
-            class="btn btn-primary"
-        >
-            FBR JSON
-        </a>
+
+        @if(auth()->user()?->hasSystemRole('super-admin'))
+
+            <a
+                href="{{ route('invoices.fbr-json',$invoice) }}"
+                class="btn"
+            >
+                FBR JSON
+            </a>
+
+        @endif
+
 
         <a
             href="{{ route('invoices.submissions', $invoice) }}"
@@ -44,7 +50,27 @@
             FBR History
         </a>
 
-        @if(!$invoice->fbr_invoice_number)
+
+        @if(
+            empty($displayFbrInvoiceNumber)
+            && $invoice->sandbox_scenario_id
+        )
+
+            <button
+                type="button"
+                id="submit-sandbox-preview"
+                class="btn btn-primary"
+            >
+                Submit to FBR Sandbox
+            </button>
+
+        @endif
+
+
+        @if(
+            config('fbr.production_enabled')
+            && !$invoice->fbr_invoice_number
+        )
 
             <button
                 type="button"
@@ -61,14 +87,115 @@
 
     @include(
         'invoices._document',
-        ['invoice' => $invoice]
+        [
+            'invoice' => $invoice,
+            'qrCode' => $qrCode,
+            'displayFbrInvoiceNumber' => $displayFbrInvoiceNumber,
+            'isSandbox' => $isSandbox,
+        ]
     )
 
 @endsection
+
+
 @push('scripts')
 
     <script>
+
         $(document).ready(function () {
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Submit to FBR Sandbox
+            |--------------------------------------------------------------------------
+            */
+
+            $('#submit-sandbox-preview').click(function () {
+
+                if (!confirm(
+                    'Submit this invoice to FBR Sandbox and generate a sandbox invoice number?'
+                )) {
+                    return;
+                }
+
+                let button = $(this);
+
+                button
+                    .prop('disabled', true)
+                    .text('Submitting to Sandbox...');
+
+
+                $.ajax({
+
+                    url:
+                        "{{ route(
+                            'invoices.post-sandbox',
+                            $invoice
+                        ) }}",
+
+                    type:
+                        "POST",
+
+                    data: {
+                        _token:
+                            "{{ csrf_token() }}"
+                    },
+
+
+                    success:
+                        function (response) {
+
+                            if (response.success) {
+
+                                alert(
+                                    'FBR Sandbox Invoice Created!\n\n' +
+                                    response.fbr_invoice_number
+                                );
+
+                                /*
+                                Reload preview so the FBR logo,
+                                sandbox number and QR code appear.
+                                */
+                                location.reload();
+
+                            } else {
+
+                                alert(
+                                    response.message
+                                    ?? 'FBR Sandbox rejected the invoice.'
+                                );
+
+                                button
+                                    .prop('disabled', false)
+                                    .text('Submit to FBR Sandbox');
+                            }
+                        },
+
+
+                    error:
+                        function (xhr) {
+
+                            alert(
+                                xhr.responseJSON?.message
+                                ?? 'Sandbox submission failed.'
+                            );
+
+                            button
+                                .prop('disabled', false)
+                                .text('Submit to FBR Sandbox');
+                        }
+
+                });
+
+            });
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Submit to FBR Production
+            |--------------------------------------------------------------------------
+            */
 
             $('#submit-production').click(function () {
 
@@ -87,14 +214,15 @@
                 $.ajax({
 
                     url: "{{ route(
-                'invoices.submit-production',
-                $invoice
-            ) }}",
+                        'invoices.submit-production',
+                        $invoice
+                    ) }}",
 
                     type: "POST",
 
                     data: {
-                        _token: "{{ csrf_token() }}"
+                        _token:
+                            "{{ csrf_token() }}"
                     },
 
                     success: function(response) {
@@ -109,6 +237,7 @@
                             location.reload();
 
                         } else {
+
                             alert(response.message);
 
                             button
@@ -134,6 +263,7 @@
             });
 
         });
+
     </script>
 
 @endpush

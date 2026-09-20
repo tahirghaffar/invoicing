@@ -564,23 +564,8 @@
         >
             Validate with FBR
         </button>
-
-        <button
-            type="button"
-            id="submit-sandbox"
-            class="btn btn-primary"
-            style="{{ ($invoice && $invoice->sandbox_validation_code === '00') ? '' : 'display:none;' }}"
-        >
-            Submit to FBR Sandbox
-        </button>
-
         <div
             id="fbr-validation-result"
-            class="mt-3"
-        ></div>
-
-        <div
-            id="sandbox-submit-result"
             class="mt-3"
         ></div>
         <a
@@ -1433,19 +1418,6 @@
                                 )
                                 .show();
 
-                            /*
-                            Any save resets the server-side sandbox
-                            validation state, so hide the submit button
-                            until the invoice is validated again.
-                            */
-                            $('#submit-sandbox').hide();
-
-                            $('#fbr-validation-result')
-                                .empty();
-
-                            $('#sandbox-submit-result')
-                                .empty();
-
                         },
 
                     error:
@@ -1607,12 +1579,6 @@
                             </div>
                         `);
 
-                                $('#submit-sandbox')
-                                    .show();
-
-                                $('#sandbox-submit-result')
-                                    .empty();
-
                             },
 
 
@@ -1643,9 +1609,6 @@
                             </div>
                         `);
 
-                                $('#submit-sandbox')
-                                    .hide();
-
                             },
 
 
@@ -1659,169 +1622,6 @@
                                     )
                                     .text(
                                         'Validate with FBR'
-                                    );
-                            }
-
-                    });
-
-                }
-            );
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Submit validated invoice to FBR Sandbox
-            |--------------------------------------------------------------------------
-            */
-
-            $('#submit-sandbox').on(
-                'click',
-                function () {
-
-                    let invoiceId =
-                        $('#invoice_id').val();
-
-                    if (!invoiceId) {
-
-                        $('#sandbox-submit-result')
-                            .html(`
-                                <div class="alert alert-danger">
-                                    Please save the invoice first.
-                                </div>
-                            `);
-
-                        return;
-                    }
-
-
-                    if (!confirm(
-                        'Submit this invoice to FBR Sandbox and generate a sandbox invoice number?'
-                    )) {
-                        return;
-                    }
-
-
-                    let button =
-                        $(this);
-
-
-                    button
-                        .prop('disabled', true)
-                        .text('Submitting to Sandbox...');
-
-
-                    $.ajax({
-
-                        url:
-                            "{{ url('/invoices') }}/" +
-                            invoiceId +
-                            "/post-sandbox",
-
-                        type:
-                            'POST',
-
-                        data: {
-                            _token:
-                                "{{ csrf_token() }}"
-                        },
-
-
-                        success:
-                            function (response) {
-
-                                if (!response.success) {
-
-                                    $('#sandbox-submit-result')
-                                        .html(`
-                                            <div class="alert alert-danger">
-                                                ${
-                                                    response.message
-                                                    ?? 'FBR Sandbox rejected the invoice.'
-                                                }
-                                            </div>
-                                        `);
-
-                                    return;
-                                }
-
-
-                                $('#sandbox-submit-result')
-                                    .html(`
-                                        <div class="alert alert-success">
-
-                                            <strong>
-                                                ✓ Submitted to FBR Sandbox
-                                            </strong>
-
-                                            <br>
-
-                                            Scenario:
-                                            ${response.scenario ?? ''}
-
-                                            <br>
-
-                                            FBR Sandbox Invoice No:
-                                            <strong>
-                                                ${response.fbr_invoice_number ?? ''}
-                                            </strong>
-
-                                            <br><br>
-
-                                            Open <strong>Preview Invoice</strong>
-                                            to see the FBR logo, QR code and
-                                            sandbox invoice number.
-
-                                        </div>
-                                    `);
-
-
-                                button.hide();
-
-                                $('#preview-invoice')
-                                    .show();
-
-                            },
-
-
-                        error:
-                            function (xhr) {
-
-                                let response =
-                                    xhr.responseJSON
-                                    ?? {};
-
-                                $('#sandbox-submit-result')
-                                    .html(`
-                                        <div class="alert alert-danger">
-
-                                            <strong>
-                                                FBR Sandbox Submission Failed
-                                            </strong>
-
-                                            <br>
-
-                                            ${
-                                                response.message
-                                                ?? 'Unable to submit invoice to FBR Sandbox.'
-                                            }
-
-                                        </div>
-                                    `);
-
-                            },
-
-
-                        complete:
-                            function () {
-
-                                button
-                                    .prop(
-                                        'disabled',
-                                        false
-                                    )
-                                    .text(
-                                        'Submit to FBR Sandbox'
                                     );
                             }
 

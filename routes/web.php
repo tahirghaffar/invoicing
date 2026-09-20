@@ -311,6 +311,11 @@ Route::middleware('auth')->group(function () {
             [InvoiceController::class, 'submitProduction']
         )->name('invoices.submit-production');
 
+        Route::post(
+            '/invoices/{invoice}/validate-fbr',
+            [InvoiceController::class,'validateFbr']
+        )->name('invoices.validate-fbr');
+
     });
 
 });

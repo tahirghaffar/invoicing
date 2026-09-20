@@ -16,12 +16,7 @@
 
 @include(
     'invoices._document',
-    [
-        'invoice' => $invoice,
-        'qrCode' => $qrCode,
-        'displayFbrInvoiceNumber' => $displayFbrInvoiceNumber,
-        'isSandbox' => $isSandbox,
-    ]
+    ['invoice' => $invoice]
 )
 
 </body>

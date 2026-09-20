@@ -41,6 +41,10 @@ class Invoice extends Model
 
         'created_by',
         'updated_by',
+        'sandbox_scenario_id',
+        'sandbox_validation_status',
+        'sandbox_validation_code',
+        'sandbox_validated_at',
     ];
 
     protected function casts(): array
@@ -48,6 +52,8 @@ class Invoice extends Model
         return [
             'invoice_date' => 'date',
             'fbr_submitted_at' => 'datetime',
+
+            'sandbox_validated_at' => 'datetime',
         ];
     }
 
@@ -76,5 +82,13 @@ class Invoice extends Model
     {
         return $this->hasOne(FbrSubmission::class)
             ->latestOfMany();
+    }
+
+    public function sandboxScenario()
+    {
+        return $this->belongsTo(
+            FbrSandboxScenario::class,
+            'sandbox_scenario_id'
+        );
     }
 }

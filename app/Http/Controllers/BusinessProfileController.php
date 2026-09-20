@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\FbrProvince;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessProfileController extends Controller
 {
@@ -111,6 +112,13 @@ class BusinessProfileController extends Controller
                 'max:50',
             ],
 
+            'logo' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
+
             'principal_activity_code' => [
                 'nullable',
                 'string',
@@ -133,6 +141,44 @@ class BusinessProfileController extends Controller
         )->firstOrFail();
 
         $validated['province'] = $province->description;
+
+        if ($request->hasFile('logo')) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete previous logo
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $business->logo_path
+                &&
+                Storage::disk('public')->exists(
+                    $business->logo_path
+                )
+            ) {
+
+                Storage::disk('public')->delete(
+                    $business->logo_path
+                );
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Store new logo
+            |--------------------------------------------------------------------------
+            */
+
+            $logoPath = $request
+                ->file('logo')
+                ->store(
+                    'business-logos/' . $business->id,
+                    'public'
+                );
+
+            $business->logo_path = $logoPath;
+        }
 
         $business->update($validated);
 

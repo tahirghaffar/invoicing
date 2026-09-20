@@ -653,20 +653,12 @@
         This invoice was generated through the
         Digital Invoicing System.
 
-        @if(empty($displayFbrInvoiceNumber))
+        @if(!$invoice->fbr_invoice_number)
 
             <br>
 
             <strong>
                 FBR submission pending / not yet submitted.
-            </strong>
-
-        @elseif(!empty($isSandbox))
-
-            <br>
-
-            <strong>
-                Sandbox / test FBR invoice — not a production tax invoice.
             </strong>
 
         @endif

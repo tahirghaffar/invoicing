@@ -27,7 +27,7 @@
 
     <div class="card">
 
-        <form id="business-profile-form">
+        <form id="business-profile-form" enctype="multipart/form-data">
 
             @csrf
             @method('PUT')
@@ -44,6 +44,46 @@
                 value="{{ $business->name }}"
                 required
             >
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Business Logo
+                </label>
+
+                @if($business->logo_path)
+
+                    <div class="mb-3">
+
+                        <img
+                            src="{{ asset(
+                    'storage/' .
+                    $business->logo_path
+                ) }}"
+                            alt="{{ $business->name }}"
+                            style="
+                    max-width:160px;
+                    max-height:90px;
+                    object-fit:contain;
+                "
+                        >
+
+                    </div>
+
+                @endif
+
+                <input
+                    type="file"
+                    name="logo"
+                    class="form-control"
+                    accept=".jpg,.jpeg,.png,.webp"
+                >
+
+                <small class="text-muted">
+                    JPG, PNG or WebP. Maximum 2 MB.
+                </small>
+
+            </div>
 
 
             <label>Legal / Registered Business Name</label>
@@ -238,6 +278,9 @@
                 button.prop('disabled', true)
                     .text('Saving...');
 
+                let formData = new FormData(
+                    document.getElementById('business-profile-form')
+                );
 
                 $.ajax({
 
@@ -245,8 +288,10 @@
 
                     type: "POST",
 
-                    data: form.serialize(),
-
+                    // data: form.serialize(),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function (response) {
 
                         $('#success-message')

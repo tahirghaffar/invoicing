@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 13, 2026 at 09:37 PM
+-- Generation Time: Sep 20, 2026 at 10:57 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.5.10
 
@@ -341,6 +341,10 @@ CREATE TABLE `invoices` (
   `invoice_number` varchar(100) NOT NULL,
   `invoice_type` varchar(50) NOT NULL DEFAULT 'Sale Invoice',
   `invoice_date` date NOT NULL,
+  `sandbox_scenario_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `sandbox_validation_status` varchar(50) DEFAULT NULL,
+  `sandbox_validation_code` varchar(20) DEFAULT NULL,
+  `sandbox_validated_at` timestamp NULL DEFAULT NULL,
   `seller_ntn` varchar(30) NOT NULL,
   `seller_strn` varchar(30) DEFAULT NULL,
   `seller_business_name` varchar(255) NOT NULL,
@@ -761,7 +765,8 @@ ALTER TABLE `invoices`
   ADD KEY `invoices_customer_id_foreign` (`customer_id`),
   ADD KEY `invoices_created_by_foreign` (`created_by`),
   ADD KEY `invoices_updated_by_foreign` (`updated_by`),
-  ADD KEY `invoices_status_index` (`status`);
+  ADD KEY `invoices_status_index` (`status`),
+  ADD KEY `invoices_sandbox_scenario_id_foreign` (`sandbox_scenario_id`);
 
 --
 -- Indexes for table `invoice_items`
@@ -1081,6 +1086,7 @@ ALTER TABLE `invoices`
   ADD CONSTRAINT `invoices_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `businesses` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `invoices_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `invoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `invoices_sandbox_scenario_id_foreign` FOREIGN KEY (`sandbox_scenario_id`) REFERENCES `fbr_sandbox_scenarios` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `invoices_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
