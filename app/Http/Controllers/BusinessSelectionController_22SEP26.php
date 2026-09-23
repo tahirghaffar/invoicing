@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
 use App\Services\AuditService;
 
 class BusinessSelectionController extends Controller
@@ -40,28 +38,6 @@ class BusinessSelectionController extends Controller
         session([
             'current_business_id' => $business->id,
         ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Persist last selected business for Remember Me users
-        |--------------------------------------------------------------------------
-        |
-        | On a future request Laravel may restore the authenticated user from
-        | its remember cookie after the normal session has expired. This second
-        | cookie lets us restore the user's last business automatically too.
-        |
-        */
-
-        if (
-            session('remember_login')
-            || Auth::viaRemember()
-        ) {
-            Cookie::queue(
-                'last_business_id',
-                (string) $business->id,
-                60 * 24 * 30
-            );
-        }
 
         app(AuditService::class)->log(
             'business.selected',

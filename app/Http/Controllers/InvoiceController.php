@@ -1603,10 +1603,27 @@ class InvoiceController extends Controller
             ?? null;
 
         $error =
-            $validationResponse[
-            'error'
-            ]
+            $validationResponse['error']
             ?? null;
+
+        $itemErrors = [];
+
+        foreach (
+            $validationResponse['invoiceStatuses'] ?? []
+            as $itemStatus
+        ) {
+            if (!empty($itemStatus['error'])) {
+                $itemErrors[] =
+                    $itemStatus['error'];
+            }
+        }
+
+        $errorMessage = $error;
+
+        if (!empty($itemErrors)) {
+            $errorMessage =
+                implode('<br>', array_unique($itemErrors));
+        }
 
 
         /*
@@ -1681,7 +1698,7 @@ class InvoiceController extends Controller
                 $success
                     ? 'Invoice validated successfully with FBR.'
                     : (
-                $error
+                $errorMessage
                     ?: 'FBR validation failed.'
                 ),
 

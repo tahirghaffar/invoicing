@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
 use App\Services\AuditService;
 
 class AuthController extends Controller
@@ -38,33 +37,6 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Remember-login preference
-        |--------------------------------------------------------------------------
-        |
-        | This flag is only needed during the current session so that, when a
-        | multi-business user chooses a business, we know whether to persist
-        | that business choice in an encrypted cookie.
-        |
-        */
-
-        $request->session()->put(
-            'remember_login',
-            $remember
-        );
-
-        /*
-        | If this login is NOT persistent, remove any old remembered-business
-        | cookie that may exist in this browser.
-        */
-
-        if (! $remember) {
-            Cookie::queue(
-                Cookie::forget('last_business_id')
-            );
-        }
-
         app(AuditService::class)->log(
             'auth.login',
             $request->user(),
@@ -95,27 +67,9 @@ class AuthController extends Controller
             ->get();
 
         if ($memberships->count() === 1) {
-
-            $businessId =
-                $memberships->first()->business_id;
-
             session([
-                'current_business_id' => $businessId,
+                'current_business_id' => $memberships->first()->business_id,
             ]);
-
-            /*
-            | Remember the business together with the persistent login.
-            | Laravel's EncryptCookies middleware will encrypt/sign this cookie.
-            */
-
-            if ($remember) {
-                Cookie::queue(
-                    'last_business_id',
-                    (string) $businessId,
-                    60 * 24 * 30
-                );
-            }
-
             app(AuditService::class)->log(
                 'auth.login',
                 $request->user(),
@@ -138,10 +92,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        Cookie::queue(
-            Cookie::forget('last_business_id')
-        );
-
         return redirect()->route('login')
             ->withErrors([
                 'email' => 'No active business is assigned to this account.',
@@ -159,10 +109,6 @@ class AuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        Cookie::queue(
-            Cookie::forget('last_business_id')
-        );
 
         return redirect()->route('login');
     }
