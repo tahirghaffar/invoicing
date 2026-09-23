@@ -31,6 +31,7 @@ Route::get('/', function () {
 });
 
 Route::get('/system-maintenance/migrate', [SystemMaintenanceController::class, 'migrate']);
+Route::get('/system-maintenance/storage-link',[SystemMaintenanceController::class, 'storageLink']);
 
 Route::middleware('guest')->group(function () {
 

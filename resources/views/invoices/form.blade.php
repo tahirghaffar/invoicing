@@ -1077,6 +1077,9 @@
                 row.find('.unit-price')
                     .val(p.unit_price);
 
+                row.find('.fixed-value')
+                    .val(p.fixed_notified_value_or_retail_price ?? 0);
+
                 row.find('.product-results')
                     .hide();
 
