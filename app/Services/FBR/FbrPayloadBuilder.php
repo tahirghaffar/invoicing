@@ -125,11 +125,7 @@ class FbrPayloadBuilder
                         4
                     ),
 
-                'extraTax' =>
-                    round(
-                        (float) $item->extra_tax,
-                        4
-                    ),
+                'extraTax' => $scenarioId === 'SN028' ? '' : round((float) $item->extra_tax,4),
 
                 'furtherTax' =>
                     round(

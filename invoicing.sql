@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 23, 2026 at 11:22 PM
+-- Generation Time: Sep 24, 2026 at 11:00 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.5.10
 
@@ -110,18 +110,19 @@ CREATE TABLE `businesses` (
   `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`)),
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `monthly_invoice_limit` int(10) UNSIGNED NOT NULL DEFAULT 100
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `businesses`
 --
 
-INSERT INTO `businesses` (`id`, `name`, `legal_name`, `ntn`, `strn`, `registration_type`, `province`, `province_code`, `city`, `address`, `principal_activity_code`, `principal_activity_description`, `profile_completed_at`, `slug`, `email`, `phone`, `logo_path`, `timezone`, `currency`, `status`, `metadata`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Javed Mehfooz Ali Siddiqui', 'Talha Enterprises', '4036009', '444444', 'registered', 'PUNJAB', 7, 'Lahore', 'q23 asdfv asd fasdflaksd fa;sldf asd', NULL, NULL, '2026-09-20 15:35:35', 'javed-mehfooz-ali-siddiqui-1ksbx6', 'gmail@gmail.com', '234234234', 'business-logos/1/cZLeijCbHVOYsL49tV6LXH6oJIkZc1txRvoOa7ml.jpg', 'Asia/Karachi', 'PKR', 'active', NULL, '2026-08-31 16:54:58', '2026-09-20 15:35:35', NULL),
-(2, 'Jamshed & Brother', 'Jamshed & Brothers Legal', NULL, NULL, 'registered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'jamshed-brother-erxv45', NULL, NULL, NULL, 'Asia/Karachi', 'PKR', 'active', NULL, '2026-08-31 16:55:50', '2026-08-31 16:55:50', NULL),
-(3, 'Abuzar Consulting', 'Abuzar Consulting Pvt. Ltd.', NULL, NULL, 'registered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'abuzar-consulting-mr55jz', NULL, NULL, NULL, 'Asia/Karachi', 'PKR', 'active', NULL, '2026-08-31 16:56:30', '2026-08-31 16:56:30', NULL),
-(4, 'ABC Consulting', 'ABC Pvt. Ltd', NULL, NULL, 'registered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'abc-consulting-m8nrxl', NULL, NULL, NULL, 'Asia/Karachi', 'PKR', 'active', NULL, '2026-09-01 02:09:04', '2026-09-01 02:09:04', NULL);
+INSERT INTO `businesses` (`id`, `name`, `legal_name`, `ntn`, `strn`, `registration_type`, `province`, `province_code`, `city`, `address`, `principal_activity_code`, `principal_activity_description`, `profile_completed_at`, `slug`, `email`, `phone`, `logo_path`, `timezone`, `currency`, `status`, `metadata`, `created_at`, `updated_at`, `deleted_at`, `monthly_invoice_limit`) VALUES
+(1, 'Javed Mehfooz Ali Siddiqui', 'Talha Enterprises', '4036009', '444444', 'registered', 'PUNJAB', 7, 'Lahore', 'q23 asdfv asd fasdflaksd fa;sldf asd', NULL, NULL, '2026-09-20 15:35:35', 'javed-mehfooz-ali-siddiqui-1ksbx6', 'gmail@gmail.com', '234234234', 'business-logos/1/cZLeijCbHVOYsL49tV6LXH6oJIkZc1txRvoOa7ml.jpg', 'Asia/Karachi', 'PKR', 'active', NULL, '2026-08-31 16:54:58', '2026-09-20 15:35:35', NULL, 100),
+(2, 'Jamshed & Brother', 'Jamshed & Brothers Legal', NULL, NULL, 'registered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'jamshed-brother-erxv45', NULL, NULL, NULL, 'Asia/Karachi', 'PKR', 'active', NULL, '2026-08-31 16:55:50', '2026-08-31 16:55:50', NULL, 100),
+(3, 'Abuzar Consulting', 'Abuzar Consulting Pvt. Ltd.', NULL, NULL, 'registered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'abuzar-consulting-mr55jz', NULL, NULL, NULL, 'Asia/Karachi', 'PKR', 'active', NULL, '2026-08-31 16:56:30', '2026-08-31 16:56:30', NULL, 100),
+(4, 'ABC Consulting', 'ABC Pvt. Ltd', NULL, NULL, 'registered', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'abc-consulting-m8nrxl', NULL, NULL, NULL, 'Asia/Karachi', 'PKR', 'active', NULL, '2026-09-01 02:09:04', '2026-09-01 02:09:04', NULL, 100);
 
 -- --------------------------------------------------------
 
@@ -8635,7 +8636,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (20, '2026_09_06_202924_create_fbr_sandbox_scenario_tables', 10),
 (21, '2026_09_10_204757_add_metadata_to_audit_logs_table', 11),
 (22, '2026_09_13_080523_change_invoice_items_decimal_precision', 12),
-(23, '2026_09_20_175318_add_sandbox_validation_fields_to_invoices_table', 13);
+(23, '2026_09_20_175318_add_sandbox_validation_fields_to_invoices_table', 13),
+(24, '2026_09_24_000000_add_monthly_invoice_limit_to_businesses_table', 14);
 
 -- --------------------------------------------------------
 
@@ -8875,7 +8877,8 @@ CREATE TABLE `sessions` (
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('E59OM7aq10vXeCRq1pw9sASxnKfAnAie4cch6unV', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiI1akltOXM5T2Z2YzRwNURFeUgwc3VCazY2QjB0SWpib080dkhGTTE0IiwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjIsIl9wcmV2aW91cyI6eyJ1cmwiOiJodHRwOlwvXC9pbnZvaWNpbmcubG9jYWxcL2ludm9pY2VzIiwicm91dGUiOiJpbnZvaWNlcy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImN1cnJlbnRfYnVzaW5lc3NfaWQiOjF9', 1790103556),
 ('rtRzkCFDBXr572NRWY1vxmtms8is9OVnuaaxxy1L', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJGdEQ0a2RselBMSThFVk1sS1BaMlg5aDJqT1lSODh2alBLQ0tuQVJXIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvaW52b2ljaW5nLmxvY2FsXC9pbnZvaWNlcyIsInJvdXRlIjoiaW52b2ljZXMuaW5kZXgifSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjIsImN1cnJlbnRfYnVzaW5lc3NfaWQiOjF9', 1789974576),
-('WclZvU2YNPfQ8VHmRLiUb9LGX7vRwyyXGTJWoHqs', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJGVW8wZHAwdGwzazhQUEMwWVFEdWFmV1JIUXlsVVNYZ2lZWXdTdTNRIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvaW52b2ljaW5nLmxvY2FsXC9pbnZvaWNlc1wvN1wvcHJpbnQiLCJyb3V0ZSI6Imludm9pY2VzLnByaW50In0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoyLCJjdXJyZW50X2J1c2luZXNzX2lkIjoxfQ==', 1789938942);
+('WclZvU2YNPfQ8VHmRLiUb9LGX7vRwyyXGTJWoHqs', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJGVW8wZHAwdGwzazhQUEMwWVFEdWFmV1JIUXlsVVNYZ2lZWXdTdTNRIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvaW52b2ljaW5nLmxvY2FsXC9pbnZvaWNlc1wvN1wvcHJpbnQiLCJyb3V0ZSI6Imludm9pY2VzLnByaW50In0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoyLCJjdXJyZW50X2J1c2luZXNzX2lkIjoxfQ==', 1789938942),
+('z5T2bus6RhuEybXW9aKHC0gxuVAxT5Z0PBW112GT', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJUbWFiWXhjNWNZVTNqTkdCZmVoekJmdUNCSHBLdkJwTTdBRDFKaTl2IiwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjIsIl9wcmV2aW91cyI6eyJ1cmwiOiJodHRwOlwvXC9pbnZvaWNpbmcubG9jYWxcL3Byb2R1Y3RzIiwicm91dGUiOiJwcm9kdWN0cy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImN1cnJlbnRfYnVzaW5lc3NfaWQiOjF9', 1790283274);
 
 -- --------------------------------------------------------
 
@@ -8903,7 +8906,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `status`, `last_login_at`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'System Administrator', 'admin@invoicing.local', NULL, '$2y$12$laIrqSoFVDch2yaNNWZQFu.HVAc21BcXzjrYFi.EnT3JYEk6175iS', 'active', '2026-09-10 16:06:43', 'NAnh1lMo5v0kAg1EJPDaDySSt3toaMh92SzezZ9JEdkJV0t872GtG75V9mFw', '2026-08-31 16:23:05', '2026-09-10 16:06:43'),
 (2, 'Javed', 'javed@gmail.com', NULL, '$2y$12$8F0.BOxkPET1OQFppTfanuknr8KWmrTXsstee6mNyPNCcl5BGVvaa', 'active', '2026-09-21 02:09:24', 'ocCoZwD9plIURQl9nWaWOlmY9TvNRjpV0TIYaDdTkLkoiGEjMt8imjo1P0BR', '2026-08-31 16:54:58', '2026-09-21 02:09:24'),
-(3, 'Ammar Jamshaid', 'ammar@gmail.com', NULL, '$2y$12$B27O0aqQGzWy8ba0vKVn..iq3cUCFWJYzGzFu.mSl73GGZ0YecQrG', 'active', '2026-09-02 12:31:15', NULL, '2026-08-31 16:55:50', '2026-09-02 12:31:15'),
+(3, 'Jamshed Mehfooz', 'jamshed@gmail.com', NULL, '$2y$12$B27O0aqQGzWy8ba0vKVn..iq3cUCFWJYzGzFu.mSl73GGZ0YecQrG', 'active', '2026-09-02 12:31:15', NULL, '2026-08-31 16:55:50', '2026-09-02 12:31:15'),
 (4, 'M. Abuzar Tahir', 'abuzar@hotmail.com', NULL, '$2y$12$gocigc.QoiU0jT1QVOh0M.jRTLB1mq4NzvZAMlQA1M9AT9Z87asNW', 'active', '2026-08-31 16:57:36', NULL, '2026-08-31 16:56:30', '2026-08-31 16:57:36'),
 (5, 'Someone Xyz', 'xyz@abcconsulting.com', NULL, '$2y$12$1pZuoawXmJI4X.rVcT3L7eNorbtoC5xry.90ZUCiIztlSm1UONw8S', 'active', '2026-09-10 16:05:48', 'PoTP7sZNfsNkUszbXrYxiGNuPwfF2M34rf8lKhX7AdJ9bHohxNcTgiUASW8e', '2026-09-01 02:09:04', '2026-09-10 16:05:48');
 
@@ -9302,7 +9305,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `permissions`

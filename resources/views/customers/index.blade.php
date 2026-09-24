@@ -170,7 +170,85 @@
     </div>
 
 
-    {{ $customers->links() }}
+
+    <div class="card" style="margin-top:15px;">
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:12px;
+                flex-wrap:wrap;
+            "
+        >
+            <div style="color:#667085;font-size:13px;">
+                Showing
+                <strong>{{ $customers->count() ? $customers->firstItem() : 0 }}</strong>
+                to
+                <strong>{{ $customers->count() ? $customers->lastItem() : 0 }}</strong>
+                of
+                <strong>{{ $customers->total() }}</strong>
+                customers
+            </div>
+
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                    flex-wrap:wrap;
+                "
+            >
+                @if($customers->onFirstPage())
+                    <span
+                        class="btn"
+                        style="opacity:.45;cursor:not-allowed;"
+                    >
+                        Previous
+                    </span>
+                @else
+                    <a
+                        href="{{ $customers->previousPageUrl() }}"
+                        class="btn"
+                    >
+                        Previous
+                    </a>
+                @endif
+
+                <span
+                    style="
+                        padding:7px 11px;
+                        border:1px solid #e4e7ec;
+                        border-radius:7px;
+                        background:#f9fafb;
+                        color:#475467;
+                        font-size:13px;
+                        font-weight:600;
+                    "
+                >
+                    Page {{ $customers->currentPage() }}
+                    of {{ max(1, $customers->lastPage()) }}
+                </span>
+
+                @if($customers->hasMorePages())
+                    <a
+                        href="{{ $customers->nextPageUrl() }}"
+                        class="btn"
+                    >
+                        Next
+                    </a>
+                @else
+                    <span
+                        class="btn"
+                        style="opacity:.45;cursor:not-allowed;"
+                    >
+                        Next
+                    </span>
+                @endif
+            </div>
+        </div>
+    </div>
+
 
 @endsection
 

@@ -175,7 +175,85 @@
     </div>
 
 
-    {{ $products->links() }}
+
+    <div class="card" style="margin-top:15px;">
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:12px;
+                flex-wrap:wrap;
+            "
+        >
+            <div style="color:#667085;font-size:13px;">
+                Showing
+                <strong>{{ $products->count() ? $products->firstItem() : 0 }}</strong>
+                to
+                <strong>{{ $products->count() ? $products->lastItem() : 0 }}</strong>
+                of
+                <strong>{{ $products->total() }}</strong>
+                products / services
+            </div>
+
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                    flex-wrap:wrap;
+                "
+            >
+                @if($products->onFirstPage())
+                    <span
+                        class="btn"
+                        style="opacity:.45;cursor:not-allowed;"
+                    >
+                        Previous
+                    </span>
+                @else
+                    <a
+                        href="{{ $products->previousPageUrl() }}"
+                        class="btn"
+                    >
+                        Previous
+                    </a>
+                @endif
+
+                <span
+                    style="
+                        padding:7px 11px;
+                        border:1px solid #e4e7ec;
+                        border-radius:7px;
+                        background:#f9fafb;
+                        color:#475467;
+                        font-size:13px;
+                        font-weight:600;
+                    "
+                >
+                    Page {{ $products->currentPage() }}
+                    of {{ max(1, $products->lastPage()) }}
+                </span>
+
+                @if($products->hasMorePages())
+                    <a
+                        href="{{ $products->nextPageUrl() }}"
+                        class="btn"
+                    >
+                        Next
+                    </a>
+                @else
+                    <span
+                        class="btn"
+                        style="opacity:.45;cursor:not-allowed;"
+                    >
+                        Next
+                    </span>
+                @endif
+            </div>
+        </div>
+    </div>
+
 
 @endsection
 

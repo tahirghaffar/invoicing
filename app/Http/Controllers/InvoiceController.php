@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\FbrSubmission;
+use App\Models\Business;
 
 use App\Services\FBR\FbrProductionService;
 use App\Services\FBR\FbrQrCodeService;
@@ -22,6 +23,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 
 
@@ -39,6 +41,38 @@ class InvoiceController extends Controller
     }
 
 
+    private function monthlyInvoiceUsage(Business $business): array
+    {
+        $limit = (int) ($business->monthly_invoice_limit ?: 100);
+
+        $count = Invoice::withTrashed()
+            ->where('business_id', $business->id)
+            ->whereBetween('created_at', [
+                now()->startOfMonth(),
+                now()->endOfMonth(),
+            ])
+            ->count();
+
+        return [
+            'count' => $count,
+            'limit' => $limit,
+            'remaining' => max(0, $limit - $count),
+            'reached' => $count >= $limit,
+        ];
+    }
+
+
+    private function ensureInvoiceEditable(Invoice $invoice): void
+    {
+        if ($invoice->isFbrLocked()) {
+            throw ValidationException::withMessages([
+                'invoice' =>
+                    'This invoice already has an FBR sandbox or production invoice number and can no longer be edited.',
+            ]);
+        }
+    }
+
+
     public function index(Request $request)
     {
         if (!$this->membership($request)
@@ -52,13 +86,25 @@ class InvoiceController extends Controller
             'business_id',
             $business->id
         )
-            ->with('latestFbrSubmission')
+            ->with([
+                'latestFbrSubmission',
+                'successfulSandboxSubmission',
+            ])
             ->latest()
             ->paginate(20);
 
+        $monthlyUsage =
+            $this->monthlyInvoiceUsage($business);
+
         return view(
             'invoices.index',
-            compact('invoices')
+            [
+                'invoices' => $invoices,
+                'monthlyInvoiceCount' => $monthlyUsage['count'],
+                'monthlyInvoiceLimit' => $monthlyUsage['limit'],
+                'monthlyInvoiceRemaining' => $monthlyUsage['remaining'],
+                'monthlyInvoiceLimitReached' => $monthlyUsage['reached'],
+            ]
         );
     }
 
@@ -94,11 +140,32 @@ class InvoiceController extends Controller
             ->orderBy('scenario_code')
             ->get();
 
+        $monthlyUsage =
+            $this->monthlyInvoiceUsage($business);
+
+        if ($monthlyUsage['reached']) {
+            return redirect()
+                ->route('invoices.index')
+                ->withErrors([
+                    'invoice_limit' =>
+                        'Your monthly invoice limit of '
+                        . $monthlyUsage['limit']
+                        . ' invoices has been reached. '
+                        . 'You cannot create additional invoices this month.',
+                ]);
+        }
+
         $invoice = null;
 
         return view(
             'invoices.form',
-            compact('invoice','scenarios')
+            [
+                'invoice' => $invoice,
+                'scenarios' => $scenarios,
+                'monthlyInvoiceCount' => $monthlyUsage['count'],
+                'monthlyInvoiceLimit' => $monthlyUsage['limit'],
+                'monthlyInvoiceRemaining' => $monthlyUsage['remaining'],
+            ]
         );
     }
 
@@ -118,6 +185,8 @@ class InvoiceController extends Controller
             abort(403);
         }
 
+        $this->ensureInvoiceEditable($invoice);
+
         $invoice->load(
             'items',
             'customer'
@@ -134,12 +203,18 @@ class InvoiceController extends Controller
             ->orderBy('scenario_code')
             ->get();
 
+        $monthlyUsage =
+            $this->monthlyInvoiceUsage($business);
+
         return view(
             'invoices.form',
-            compact(
-                'invoice',
-                'scenarios'
-            )
+            [
+                'invoice' => $invoice,
+                'scenarios' => $scenarios,
+                'monthlyInvoiceCount' => $monthlyUsage['count'],
+                'monthlyInvoiceLimit' => $monthlyUsage['limit'],
+                'monthlyInvoiceRemaining' => $monthlyUsage['remaining'],
+            ]
         );
     }
 
@@ -404,7 +479,41 @@ class InvoiceController extends Controller
                         abort(403);
                     }
 
+                    $this->ensureInvoiceEditable($invoice);
+
                 } else {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Monthly invoice limit
+                    |--------------------------------------------------------------------------
+                    */
+
+                    Business::whereKey($business->id)
+                        ->lockForUpdate()
+                        ->firstOrFail();
+
+                    $monthlyLimit =
+                        (int) ($business->monthly_invoice_limit ?: 100);
+
+                    $monthlyCount =
+                        Invoice::withTrashed()
+                            ->where('business_id', $business->id)
+                            ->whereBetween('created_at', [
+                                now()->startOfMonth(),
+                                now()->endOfMonth(),
+                            ])
+                            ->count();
+
+                    if ($monthlyCount >= $monthlyLimit) {
+                        throw ValidationException::withMessages([
+                            'invoice_limit' =>
+                                'Your monthly invoice limit of '
+                                . $monthlyLimit
+                                . ' invoices has been reached. '
+                                . 'You cannot create additional invoices this month.',
+                        ]);
+                    }
 
                     $number =
                         $numberService->next(

@@ -327,6 +327,23 @@
         {{ $invoice ? 'Edit Invoice' : 'Create Invoice' }}
     </h1>
 
+    <div class="card" style="margin-bottom:15px;">
+        <strong>Monthly Invoice Usage:</strong>
+        {{ $monthlyInvoiceCount ?? 0 }}
+        /
+        {{ $monthlyInvoiceLimit ?? 100 }}
+
+        @if(
+            ($monthlyInvoiceCount ?? 0)
+            >= (($monthlyInvoiceLimit ?? 100) * 0.9)
+        )
+            <div style="margin-top:6px;color:#b54708;font-weight:700;">
+                {{ $monthlyInvoiceRemaining ?? 0 }}
+                invoice(s) remaining this month.
+            </div>
+        @endif
+    </div>
+
     <div
         id="save-message"
         class="success"
@@ -1080,6 +1097,12 @@
                 row.find('.fixed-value')
                     .val(p.fixed_notified_value_or_retail_price ?? 0);
 
+                row.find('.sro-schedule-no')
+                    .val(p.sro_schedule_no ?? '');
+
+                row.find('.sro-item-serial-no')
+                    .val(p.sro_item_serial_no ?? '');
+
                 row.find('.product-results')
                     .hide();
 
@@ -1783,6 +1806,29 @@
 
                                 $('#preview-invoice')
                                     .show();
+
+                                $('#save-draft')
+                                    .prop('disabled', true);
+
+                                $('#validate-fbr')
+                                    .prop('disabled', true);
+
+                                $('#add-item')
+                                    .prop('disabled', true);
+
+                                $('#invoice-form')
+                                    .find('input, select, button')
+                                    .prop('disabled', true);
+
+                                setTimeout(
+                                    function () {
+                                        window.location.href =
+                                            '/invoices/' +
+                                            invoiceId +
+                                            '/preview';
+                                    },
+                                    1200
+                                );
 
                             },
 

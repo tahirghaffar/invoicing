@@ -84,6 +84,29 @@ class Invoice extends Model
             ->latestOfMany();
     }
 
+    public function successfulSandboxSubmission()
+    {
+        return $this->hasOne(FbrSubmission::class)
+            ->where('environment', 'sandbox')
+            ->where('fbr_status_code', '00')
+            ->whereNotNull('fbr_invoice_number')
+            ->latestOfMany('submitted_at');
+    }
+
+    public function isFbrLocked(): bool
+    {
+        if (!empty($this->fbr_invoice_number)) {
+            return true;
+        }
+
+        if ($this->relationLoaded('successfulSandboxSubmission')) {
+            return $this->successfulSandboxSubmission !== null;
+        }
+
+        return $this->successfulSandboxSubmission()
+            ->exists();
+    }
+
     public function sandboxScenario()
     {
         return $this->belongsTo(
