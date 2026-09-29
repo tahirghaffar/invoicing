@@ -514,7 +514,7 @@
             <button
                 type="button"
                 id="add-item"
-                class="btn"
+                class="btn btn-gray"
             >
                 + Add Item
             </button>

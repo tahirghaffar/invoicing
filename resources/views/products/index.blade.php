@@ -11,7 +11,7 @@
 
         <a
             href="{{ route('products.create') }}"
-            class="btn btn-primary"
+            class="btn btn-success"
         >
             + Add Product / Service
         </a>
@@ -37,7 +37,8 @@
 
             <button
                 type="submit"
-                class="btn"
+                class="btn btn-success"
+
             >
                 Search
             </button>
@@ -83,10 +84,11 @@
 
                 <tr id="product-row-{{ $product->id }}">
 
-                    <td>
+                    <td style="max-width: 400px;">
                         <strong>
                             {{ $product->name }}
-                        </strong>
+                        </strong><br />
+                        <small>{{ $product->description }}</small>
                     </td>
 
                     <td>
@@ -137,9 +139,10 @@
 
                         <a
                             href="{{ route('products.edit', $product) }}"
-                            class="btn"
+                            class="btn btn-sm btn-outline-primary"
+                            title="Edit"
                         >
-                            Edit
+                            <i class="bi bi-pencil-square"></i>
                         </a>
 
 

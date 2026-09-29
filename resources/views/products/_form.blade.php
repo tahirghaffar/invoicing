@@ -279,7 +279,7 @@
         <button
             type="submit"
             id="save-product"
-            class="btn btn-primary"
+            class="btn btn-success"
         >
 
             {{ isset($product)

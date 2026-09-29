@@ -1554,6 +1554,18 @@ class InvoiceController extends Controller
 
             if ($success) {
 
+                $fbrGeneratedAt = now();
+
+                if (!empty($response['dated'])) {
+                    try {
+                        $fbrGeneratedAt = \Carbon\Carbon::parse(
+                            $response['dated']
+                        );
+                    } catch (\Throwable $e) {
+                        // Keep local submission time if FBR date cannot be parsed.
+                    }
+                }
+
                 $invoice->update([
                     'fbr_status' =>
                         $fbrValidation['status']
@@ -1562,7 +1574,13 @@ class InvoiceController extends Controller
                     'fbr_invoice_number' =>
                         $response['invoiceNumber'],
 
-                    'fbr_submitted_at' => now(),
+                    // Use FBR's own generation timestamp when available.
+                    'fbr_submitted_at' =>
+                        $fbrGeneratedAt,
+
+                    'fbr_remote_status' =>
+                        $fbrValidation['status']
+                        ?? 'Valid',
                 ]);
             }
 

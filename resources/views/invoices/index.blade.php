@@ -34,13 +34,30 @@
         @endif
     </div>
 
-    <p>
+    <div
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-bottom:16px;
+        "
+    >
         @if(!$monthlyInvoiceLimitReached)
             <a
                 href="{{ route('invoices.create') }}"
                 class="btn btn-primary"
             >
-                + Create Invoice
+                <i class="bi bi-plus-lg"></i>
+                Create Invoice
+            </a>
+
+            <a
+                href="{{ route('invoices.import.create') }}"
+                class="btn btn-gray"
+            >
+                <i class="bi bi-file-earmark-arrow-up"></i>
+                Import PDF / Image
             </a>
         @else
             <button
@@ -48,10 +65,20 @@
                 class="btn btn-primary"
                 disabled
             >
-                + Create Invoice
+                <i class="bi bi-plus-lg"></i>
+                Create Invoice
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-gray"
+                disabled
+            >
+                <i class="bi bi-file-earmark-arrow-up"></i>
+                Import PDF / Image
             </button>
         @endif
-    </p>
+    </div>
 
     <div class="card">
 
@@ -115,7 +142,23 @@
 
                     <td>
 
-                        {{ $invoice->latestFbrSubmission?->fbr_invoice_number ?: '-' }}
+                        {{ $invoice->fbr_invoice_number
+                            ?: $invoice->latestFbrSubmission?->fbr_invoice_number
+                            ?: '-' }}
+
+                        @if($invoice->fbr_invoice_number && $invoice->fbr_submitted_at)
+                            <div style="margin-top:5px;font-size:11px;">
+                                @if($invoice->isWithinFbrCorrectionWindow())
+                                    <span style="color:#027a48;font-weight:800;">
+                                        72h correction open
+                                    </span>
+                                @else
+                                    <span style="color:#667085;font-weight:700;">
+                                        Correction window expired
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
 
                     </td>
 

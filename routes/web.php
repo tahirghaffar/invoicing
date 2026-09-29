@@ -11,7 +11,9 @@ use App\Http\Controllers\FbrSettingsController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FbrReferenceController;
+use App\Http\Controllers\FbrInvoiceSyncController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoiceImportController;
 use App\Http\Controllers\SystemMaintenanceController;
 
 use Illuminate\Support\Facades\Route;
@@ -255,6 +257,46 @@ Route::middleware('auth')->group(function () {
         )->name('invoices.index');
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Invoice Import
+        |--------------------------------------------------------------------------
+        |
+        | Phase 1:
+        | PDF/image/mobile-camera upload -> private storage -> preview.
+        |
+        */
+
+        Route::get(
+            '/invoices/import',
+            [InvoiceImportController::class, 'create']
+        )->name('invoices.import.create');
+
+
+        Route::post(
+            '/invoices/import',
+            [InvoiceImportController::class, 'store']
+        )->name('invoices.import.store');
+
+
+        Route::get(
+            '/invoices/import/{invoiceImport}/preview',
+            [InvoiceImportController::class, 'preview']
+        )->name('invoices.import.preview');
+
+
+        Route::get(
+            '/invoices/import/{invoiceImport}/file',
+            [InvoiceImportController::class, 'file']
+        )->name('invoices.import.file');
+
+
+        Route::delete(
+            '/invoices/import/{invoiceImport}',
+            [InvoiceImportController::class, 'destroy']
+        )->name('invoices.import.destroy');
+
+
         Route::get(
             '/invoices/create',
             [InvoiceController::class, 'create']
@@ -311,6 +353,16 @@ Route::middleware('auth')->group(function () {
             '/invoices/{invoice}/submit-production',
             [InvoiceController::class, 'submitProduction']
         )->name('invoices.submit-production');
+
+        Route::post(
+            '/invoices/{invoice}/sync-fbr',
+            [FbrInvoiceSyncController::class, 'sync']
+        )->name('invoices.sync-fbr');
+
+        Route::get(
+            '/invoices/{invoice}/fbr-sync-history',
+            [FbrInvoiceSyncController::class, 'history']
+        )->name('invoices.fbr-sync-history');
 
         Route::post(
             '/invoices/{invoice}/validate-fbr',

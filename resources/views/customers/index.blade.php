@@ -11,7 +11,7 @@
 
         <a
             href="{{ route('customers.create') }}"
-            class="btn btn-primary">
+            class="btn btn-warning">
 
             + Add Customer
 
@@ -38,7 +38,7 @@
 
             <button
                 type="submit"
-                class="btn">
+                class="btn btn-warning">
 
                 Search
 

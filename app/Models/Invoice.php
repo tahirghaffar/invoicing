@@ -39,12 +39,21 @@ class Invoice extends Model
 
         'status',
 
+        'fbr_status',
+        'fbr_invoice_number',
+        'fbr_submitted_at',
+
         'created_by',
         'updated_by',
         'sandbox_scenario_id',
         'sandbox_validation_status',
         'sandbox_validation_code',
         'sandbox_validated_at',
+
+        'fbr_last_synced_at',
+        'fbr_sync_status',
+        'fbr_remote_status',
+        'fbr_sync_message',
     ];
 
     protected function casts(): array
@@ -54,6 +63,7 @@ class Invoice extends Model
             'fbr_submitted_at' => 'datetime',
 
             'sandbox_validated_at' => 'datetime',
+            'fbr_last_synced_at' => 'datetime',
         ];
     }
 
@@ -105,6 +115,48 @@ class Invoice extends Model
 
         return $this->successfulSandboxSubmission()
             ->exists();
+    }
+
+
+
+    public function fbrInvoiceSyncs()
+    {
+        return $this->hasMany(FbrInvoiceSync::class);
+    }
+
+    public function latestFbrInvoiceSync()
+    {
+        return $this->hasOne(FbrInvoiceSync::class)
+            ->latestOfMany('synced_at');
+    }
+
+    public function fbrCorrectionDeadline()
+    {
+        return $this->fbr_submitted_at
+            ? $this->fbr_submitted_at->copy()->addHours(72)
+            : null;
+    }
+
+    public function isWithinFbrCorrectionWindow(): bool
+    {
+        $deadline = $this->fbrCorrectionDeadline();
+
+        return (bool) (
+            $this->fbr_invoice_number
+            && $deadline
+            && now()->lt($deadline)
+        );
+    }
+
+    public function fbrCorrectionWindowExpired(): bool
+    {
+        $deadline = $this->fbrCorrectionDeadline();
+
+        return (bool) (
+            $this->fbr_invoice_number
+            && $deadline
+            && now()->gte($deadline)
+        );
     }
 
     public function sandboxScenario()
